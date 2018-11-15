@@ -14,11 +14,15 @@ from gateware.info import platform as platform_info
 
 class Info(Module, AutoCSR):
     def __init__(self, platform, target_name):
-        self.submodules.dna = dna.DNA()
         self.submodules.git = git.GitInfo()
         target = target_name.lower()[:-3]
         self.submodules.platform = platform_info.PlatformInfo(platform.name, target)
 
+        # DNA only exists on Xilinx platforms
+        if "xc" in platform.device:
+            self.submodules.dna = dna.DNA()
+
+        # XADC only exists on Xilinx Series 7 platforms.
         if "xc7" in platform.device:
             self.submodules.xadc = xadc.XADC()
 
