@@ -10,7 +10,8 @@ from litex.build.generic_platform import Pins, Subsignal, IOStandard
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 
-from gateware import cas
+from gateware import info
+#from gateware import cas
 from gateware import spi_flash
 
 from targets.utils import csr_map_update
@@ -53,7 +54,8 @@ class _CRG(Module):
 class BaseSoC(SoCCore):
     csr_peripherals = (
         "spiflash",
-        "cas",
+#        "cas",
+        "info",
     )
     csr_map_update(SoCCore.csr_map, csr_peripherals)
 
@@ -80,8 +82,10 @@ class BaseSoC(SoCCore):
         self.submodules.crg = _CRG(platform)
         self.platform.add_period_constraint(self.crg.cd_sys.clk, 1e9/clk_freq)
 
+        self.submodules.info = info.Info(platform, self.__class__.__name__)
+
         # Control and Status
-        self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
+#        self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
 
         # SPI flash peripheral
         self.submodules.spiflash = spi_flash.SpiFlashSingle(
@@ -107,7 +111,7 @@ class BaseSoC(SoCCore):
             platform.spiflash_total_size - (self.flash_boot_address - self.mem_map["spiflash"]) - 0x100)
 
         # Disable USB activity until we switch to a USB UART.
-        self.comb += [platform.request("usb").pullup.eq(0)]
+        #self.comb += [platform.request("usb").pullup.eq(0)]
 
         # Arachne-pnr is unsupported- it has trouble routing this design
         # on this particular board reliably. That said, annotate the build
