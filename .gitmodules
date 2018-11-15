@@ -31,3 +31,6 @@
 [submodule "third_party/migen"]
 	path = third_party/migen
 	url = https://github.com/m-labs/migen.git
+[submodule "third_party/valentyusb"]
+	path = third_party/valentyusb
+	url = https://github.com/mithro/valentyusb.git
