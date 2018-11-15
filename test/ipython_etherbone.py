@@ -5,6 +5,7 @@ from IPython import embed
 from litescope.software.driver.analyzer import LiteScopeAnalyzerDriver
 
 from common import *
+from make import get_args, get_testdir
 
 
 def main():
@@ -12,7 +13,7 @@ def main():
     print_memmap(wb)
     print()
 
-    analyzer_csv = '{}/analyzer.csv'.format(make_testdir(args))
+    analyzer_csv = '{}/analyzer.csv'.format(get_testdir(args))
     if os.path.exists(analyzer_csv):
         analyzer = LiteScopeAnalyzerDriver(wb.regs, "analyzer", config_csv=analyzer_csv, debug=True)
     else:

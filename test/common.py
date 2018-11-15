@@ -27,7 +27,7 @@ class ServerProxy(threading.Thread):
         self.comm = CommUART(self.port, 115200)
         self.server = RemoteServer(self.comm)
         self.server.open()
-        self.server.start()
+        self.server.start(1)
         self.ready = True
 
 
