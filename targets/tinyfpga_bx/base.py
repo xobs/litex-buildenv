@@ -25,11 +25,13 @@ serial =  [
     )
 ]
 
+
 class _CRG(Module):
     def __init__(self, platform):
         clk16 = platform.request("clk16")
 
         self.clock_domains.cd_sys = ClockDomain()
+        self.clock_domains.usb_48 = ClockDomain(reset_less=True)
         self.reset = Signal()
 
         # FIXME: Use PLL, increase system clock to 32 MHz, pending nextpnr
@@ -49,6 +51,37 @@ class _CRG(Module):
                 reset_delay.eq(reset_delay - 1)
             )
         self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
+
+        self.specials += [
+            Instance(
+                "SB_PLL40_CORE",
+                # Parameters
+                p_DIVR = 0,
+                p_DIVF = 0b0101111,
+                p_DIVQ = 0b100,
+                p_FILTER_RANGE = 1,
+                p_FEEDBACK_PATH = "SIMPLE",
+                p_DELAY_ADJUSTMENT_MODE_FEEDBACK = "FIXED",
+                p_FDA_FEEDBACK = 0,
+                p_DELAY_ADJUSTMENT_MODE_RELATIVE = "FIXED",
+                p_FDA_RELATIVE = 0,
+                p_SHIFTREG_DIV_MODE = 0,
+                p_PLLOUT_SELECT = "GENCLK",
+                p_ENABLE_ICEGATE = 0,
+                # IO
+                i_REFERENCECLK = clk16,
+                o_PLLOUTCORE = self.usb_48.clk,
+                #o_PLLOUTGLOBAL,
+                #i_EXTFEEDBACK,
+                #i_DYNAMICDELAY,
+                #o_LOCK,
+                i_BYPASS = 0,
+                i_RESETB = 1,
+                #i_LATCHINPUTVALUE,
+                #o_SDO,
+                #i_SDI,
+            ),
+        ]
 
 
 class BaseSoC(SoCCore):
