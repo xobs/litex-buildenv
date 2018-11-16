@@ -34,6 +34,8 @@ class _CRG(Module):
         self.clock_domains.usb_48 = ClockDomain(reset_less=True)
         self.reset = Signal()
 
+        #self.platform.add_period_constraint(self.usb_48.clk, 1e9/48e9)
+
         # FIXME: Use PLL, increase system clock to 32 MHz, pending nextpnr
         # fixes.
         self.comb += self.cd_sys.clk.eq(clk16)

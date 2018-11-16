@@ -31,13 +31,8 @@ class USBTestSoC(BaseSoC):
 
         # ValentyUSB
         usb_pads = platform.request("usb")
-        self.submodules += ClockDomainsRenamer("usb_48")(
-            usbcore.UsbDevice(
-                usb_pads.d_p,
-                usb_pads.d_n,
-                0,
-            )
-        )
+        usb_device = usbcore.UsbDevice(usb_pads.d_p, usb_pads.d_n, 0)
+        self.submodules += ClockDomainsRenamer("usb_48")(usb_device)
 
         # Litescope for analyzing the BIST output
         # --------------------
@@ -47,8 +42,11 @@ class USBTestSoC(BaseSoC):
         self.comb += usb_pads.pullup.eq(self.io.output[1])
 
         analyzer_signals = [
-            usb_pads.d_p,
-            usb_pads.d_n,
+            usb_device.usb_tx_en,
+            usb_device.usb_p_tx,
+            usb_device.usb_n_tx,
+            usb_device.usb_p_rx,
+            usb_device.usb_n_rx,
         ]
         self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 256)
 
