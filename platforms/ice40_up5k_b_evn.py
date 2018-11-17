@@ -31,17 +31,17 @@ spiflash = [
 
 # The ICE40UP5K-B-EVN does not use the provided FT2232H chip to provide a
 # UART port. One must use their own USB-to-serial cable instead to get a UART.
-# We have chosen to use 48B and 51A for "tx" and "rx" respectively on Header B
-# to implement UART connections. The board comes unpopulated and will need to
-# have headers soldered.
-serial = [
+# Using the second 6-pin PMOD port. Follows Digilent PMOD Specification Type 4,
+# so e.g. PMOD USBUART can be used.
+pmod_serial = [
     ("serial", 0,
-        Subsignal("tx", Pins("J2:3")),
-        Subsignal("rx", Pins("J2:5")),
-        IOStandard("LVCMOS33")
-    )
+        Subsignal("rx", Pins("PMOD:6")),
+        Subsignal("tx", Pins("PMOD:5")),
+        Subsignal("rts", Pins("PMOD:4")),
+        Subsignal("cts", Pins("PMOD:7")),
+        IOStandard("LVCMOS33"),
+    ),
 ]
-
 
 _connectors = [
     # Many pins on the AARDVARK, PMOD, J52/HEADER A, and J2/HEADER B connectors
