@@ -48,7 +48,7 @@ class USBTestSoC(BaseSoC):
             usb_device.usb_p_rx,
             usb_device.usb_n_rx,
         ]
-        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 256)
+        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 128, clock_domain="usb_48")
 
     def do_exit(self, vns, filename="test/analyzer.csv"):
         self.analyzer.export_csv(vns, filename)

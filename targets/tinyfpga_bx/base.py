@@ -31,7 +31,7 @@ class _CRG(Module):
         clk16 = platform.request("clk16")
 
         self.clock_domains.cd_sys = ClockDomain()
-        self.clock_domains.usb_48 = ClockDomain(reset_less=True)
+        self.clock_domains.usb_48 = ClockDomain() #reset_less=True)
         self.reset = Signal()
 
         #self.platform.add_period_constraint(self.usb_48.clk, 1e9/48e9)
