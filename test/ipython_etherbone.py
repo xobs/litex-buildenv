@@ -19,6 +19,11 @@ def main():
     else:
         print("WARNING: No litescope csv found at {},\nAssuming litescope not included in design!".format(analyzer_csv))
 
+    print("Packet Count:", wb.regs.usb_pkt_count.read())
+    def setup():
+        for v in [0x12, 0x01, 0x00 , 0x02 , 0x00, 0x00, 0x00, 0x40, 0x9A, 0x23, 0x21, 0x80, 0x00, 0x01, 0x02, 0x03, 0x01, 0x01]:
+            wb.regs.usb_ep_0_in_head.write(v)
+
     try:
         embed()
     finally:
