@@ -61,10 +61,10 @@ class USBTestSoC(BaseSoC):
             #counter,
             #usb_pads.pullup,
             self.usb.iobuf.usb_tx_en,
-            self.usb.iobuf.usb_p_tx,
-            self.usb.iobuf.usb_n_tx,
-            self.usb.iobuf.usb_p_rx,
-            self.usb.iobuf.usb_n_rx,
+            #self.usb.iobuf.usb_p_tx,
+            #self.usb.iobuf.usb_n_tx,
+            #self.usb.iobuf.usb_p_rx,
+            #self.usb.iobuf.usb_n_rx,
         ]
         self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 1024, clock_domain="usb_48")
 
