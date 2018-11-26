@@ -26,11 +26,6 @@ class USBTestSoC(BaseSoC):
     }
     interrupt_map.update(BaseSoC.interrupt_map)
 
-    mem_map = {
-        "usb": 0x40000000,  # (default shadow @0xa0000000)
-    }
-    mem_map.update(BaseSoC.mem_map)
-
     def __init__(self, platform, *args, **kwargs):
 
         kwargs['cpu_type'] = None
@@ -46,12 +41,13 @@ class USBTestSoC(BaseSoC):
         usb_iobuf = usbcore.UsbIoBuf(usb_pads.d_p, usb_pads.d_n)
         self.submodules.usb = usbcore.UsbDeviceCpuInterface(usb_iobuf)
 
-        self.add_wb_slave(mem_decoder(self.mem_map["usb"]), self.usb.bus)
-        self.add_memory_region(
-            "usb", self.mem_map["usb"] | self.shadow_base, 512)
-
         # Litescope for analyzing the BIST output
         # --------------------
+        counter = Signal(32)
+        self.sync += [
+            counter.eq(counter + 1),
+        ]
+
         led = Signal()
         self.submodules.io = LiteScopeIO(8)
         self.comb += [
@@ -62,15 +58,15 @@ class USBTestSoC(BaseSoC):
         self.comb += usb_pads.pullup.eq(self.io.output[1])
 
         analyzer_signals = [
-            led,
+            #counter,
             #usb_pads.pullup,
-            #usb_device.usb_tx_en,
-            #usb_device.usb_p_tx,
-            #usb_device.usb_n_tx,
-            #usb_device.usb_p_rx,
-            #usb_device.usb_n_rx,
+            self.usb.iobuf.usb_tx_en,
+            self.usb.iobuf.usb_p_tx,
+            self.usb.iobuf.usb_n_tx,
+            self.usb.iobuf.usb_p_rx,
+            self.usb.iobuf.usb_n_rx,
         ]
-        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 1024) #, clock_domain="usb_48")
+        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 1024, clock_domain="usb_48")
 
     def do_exit(self, vns, filename="test/analyzer.csv"):
         self.analyzer.export_csv(vns, filename)
