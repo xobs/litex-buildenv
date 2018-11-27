@@ -43,7 +43,7 @@ class USBSoC(SoCCore):
         if 'integrated_rom_size' not in kwargs:
             kwargs['integrated_rom_size']=0
         if 'integrated_sram_size' not in kwargs:
-            kwargs['integrated_sram_size']=2*1024
+            kwargs['integrated_sram_size']=1*1024
         if 'integrated_main_ram_size' not in kwargs:
             kwargs['integrated_main_ram_size']=0 #4*1024
 
@@ -61,7 +61,7 @@ class USBSoC(SoCCore):
         SoCCore.__init__(self, platform, clk_freq, **kwargs)
 
         # Map the firmware directly into ROM
-        firmware_rom_size = 10*1024
+        firmware_rom_size = 11*1024
         firmware_filename = "build/tinyfpga_bx_usb_{}.minimal/software/stub/firmware.bin".format(
                 kwargs.get('cpu_type', 'lm32'))
         self.submodules.firmware_rom = firmware.FirmwareROM(firmware_rom_size, firmware_filename)
