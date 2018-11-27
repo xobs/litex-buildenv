@@ -8,7 +8,7 @@ from litex.soc.integration.soc_sdram import *
 from litex.soc.integration.builder import *
 
 
-def get_args(parser, platform='opsis', target='hdmi2usb'):
+def get_args(parser, platform='opsis', target='hdmi2usb', firmware='firmware'):
     parser.add_argument("--platform", action="store", default=os.environ.get('PLATFORM', platform))
     parser.add_argument("--target", action="store", default=os.environ.get('TARGET', target))
 
@@ -22,6 +22,7 @@ def get_args(parser, platform='opsis', target='hdmi2usb'):
     parser.add_argument("-Ot", "--target-option", default=[], nargs=2, action="append", help="set target-specific option")
     parser.add_argument("-Ob", "--build-option", default=[], nargs=2, action="append", help="set build option")
 
+    parser.add_argument("--firmware", action="store", default=os.environ.get('FIRMWARE', firmware), help="Firmware to use.")
     parser.add_argument("--no-compile-firmware", action="store_true", help="do not compile the firmware")
     parser.add_argument("--override-firmware", action="store", default=None, help="override firmware with file")
 
@@ -67,9 +68,14 @@ def get_prog(args, platform):
     return prog
 
 
+def get_imagename(args):
+    assert args.firmware is not None
+    return "image-gateware{}.bin"
+
+
 def get_image(builddir, filetype):
     assert filetype == "flash"
-    return os.path.join(builddir, "image.bin")
+    return os.path.join(builddir, "image-gateware+bios+{}.bin")
 
 
 def get_gateware(builddir, filetype):
@@ -110,6 +116,10 @@ def get_firmware(builddir, filetype="flash"):
         assert False, "Unknown file type %s" % filetype
 
 
+def filter_software(builder, name):
+    builder.software_packages = [(n, s) for n, s in builder.software_packages if n != name]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Opsis LiteX SoC", conflict_handler='resolve')
     get_args(parser)
@@ -135,16 +145,15 @@ def main():
 
         builder = Builder(soc, **buildargs)
         if not args.no_compile_firmware or args.override_firmware:
-            builder.add_software_package("uip", "{}/firmware/uip".format(os.getcwd()))
-
-            # FIXME: All platforms which current run their user programs from
-            # SPI flash lack the block RAM resources to run the default
-            # firmware. Check whether to use the stub or default firmware
-            # should be refined (perhaps soc attribute?).
-            if "main_ram" in (m[0] for m in soc.get_memory_regions()):
+            if args.firmware == "firmware":
+                builder.add_software_package("uip", "{}/firmware/uip".format(os.getcwd()))
                 builder.add_software_package("firmware", "{}/firmware".format(os.getcwd()))
-            else:
+            elif args.firmware == "stub":
                 builder.add_software_package("stub", "{}/firmware/stub".format(os.getcwd()))
+
+        import pprint
+        pprint.pprint(builder.software_packages)
+
         vns = builder.build(**dict(args.build_option))
     else:
         vns = platform.build(soc, build_dir=os.path.join(builddir, "gateware"))

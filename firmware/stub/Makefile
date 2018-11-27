@@ -1,5 +1,8 @@
+$(warning $(SOC_DIRECTORY))
 include ../include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
+
+FIRMWARE_DIRECTORY=$(STUB_DIRECTORY)/..
 
 OBJECTS=\
 	main.o \
