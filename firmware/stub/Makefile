@@ -39,15 +39,18 @@ endif
 firmware.elf: $(STUB_DIRECTORY)/$(LINKER_LD) $(OBJECTS)
 
 %.elf: ../libbase/crt0-$(CPU)-xip.o ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a
-	$(LD) $(LDFLAGS) \
+	$(CC) $(CFLAGS) \
 		-T $(STUB_DIRECTORY)/$(LINKER_LD) \
 		-N -o $@ \
-        ../libbase/crt0-$(CPU)-xip.o \
-        $(OBJECTS) \
-        -L../libbase \
+		-L$(BUILDINC_DIRECTORY) \
+	        -L../libbase \
+	        ../libbase/crt0-$(CPU)-xip.o \
+	        $(OBJECTS) \
+	        -L../libbase \
 		-lbase-nofloat \
-        -L../libcompiler_rt \
-		-lcompiler_rt
+	        -L../libcompiler_rt \
+		-lcompiler_rt \
+		-Wl,-Map=$@.map
 	chmod -x $@
 
 

@@ -89,7 +89,7 @@ endif
 firmware.elf: $(FIRMWARE_DIRECTORY)/$(LINKER_LD) $(OBJECTS)
 
 %.elf: $(CRT0) ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a ../uip/libuip.a
-	$(LD) $(LDFLAGS) \
+	$(CC) $(CLAGS) \
 		-T $(FIRMWARE_DIRECTORY)/$(LINKER_LD) \
 		-N -o $@ \
                 $(CRT0) \

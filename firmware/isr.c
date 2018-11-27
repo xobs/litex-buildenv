@@ -6,7 +6,7 @@
 #include "hdmi_in1.h"
 
 void isr(void);
-void isr(void)
+void isr(void) __attribute__ ((used))
 {
 	unsigned int irqs;
 
