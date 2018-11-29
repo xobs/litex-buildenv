@@ -27,10 +27,10 @@ class USBSoC(SoCCore):
     }
     mem_map.update(SoCCore.mem_map)
 
-    interrupt_map = {
-        "usb": 3,
-    }
-    interrupt_map.update(SoCCore.interrupt_map)
+    #interrupt_map = {
+    #    "usb": 3,
+    #}
+    #interrupt_map.update(SoCCore.interrupt_map)
 
     def __init__(self, platform, **kwargs):
 
@@ -62,8 +62,10 @@ class USBSoC(SoCCore):
 
         # Map the firmware directly into ROM
         firmware_rom_size = 11*1024
-        firmware_filename = "build/tinyfpga_bx_usb_{}.minimal/software/stub/firmware.bin".format(
-                kwargs.get('cpu_type', 'lm32'))
+        firmware_filename = (
+            "third_party/valentyusb/third_party/tinyusb/"
+            "examples/device/cdc_msc_hid/"
+            "build-valentyusb/valentyusb-firmware.bin")
         self.submodules.firmware_rom = firmware.FirmwareROM(firmware_rom_size, firmware_filename)
         self.register_mem("rom", self.mem_map["rom"], self.firmware_rom.bus, firmware_rom_size)
         self._memory_regions.append(("user_flash", self.mem_map['rom'], firmware_rom_size))
@@ -91,7 +93,7 @@ class USBSoC(SoCCore):
 
         # ValentyUSB
         usb_pads = platform.request("usb")
-        usb_iobuf = usbcore.UsbIoBuf(usb_pads.d_p, usb_pads.d_n)
+        usb_iobuf = usbcore.UsbIoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
         self.submodules.usb = usbcore.UsbDeviceCpuInterface(usb_iobuf)
 
         # Disable USB activity until we switch to a USB UART.
