@@ -6,7 +6,8 @@ import argparse
 from migen import *
 from migen.genlib.resetsync import AsyncResetSynchronizer
 
-from litex.build.generic_platform import Pins, Subsignal, IOStandard
+from litex.build.generic_platform import ConstraintError
+from litex.build.generic_platform import Pins, Subsignal, IOStandard, Misc
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
 
@@ -25,6 +26,14 @@ serial =  [
     )
 ]
 
+reset_button =  [
+    # Reset shorts these two pins together
+    # Pin 12 - Silkscreen 12
+    ("reset", 0, Pins("GPIO:11"), IOStandard("LVCMOS33"), Misc("PullUp")),
+    # Pin 13 - Silkscreen 13
+    ("reset_out", 0, Pins("GPIO:12"), IOStandard("LVCMOS33")),
+]
+
 
 class _CRG(Module):
     def __init__(self, platform):
@@ -32,7 +41,25 @@ class _CRG(Module):
 
         self.clock_domains.cd_sys = ClockDomain()
         self.clock_domains.cd_usb_48 = ClockDomain() #reset_less=True)
+
         self.reset = Signal()
+
+        # Reset signal goes high to reset.
+        try:
+            self.reset_pin = platform.request("reset")
+        except ConstraintError:
+            assert False
+            self.reset_pin = Signal()
+
+        # Drive reset_out a constant 1.
+        try:
+            reset_out = platform.request("reset_out")
+            self.comb += [
+                reset_out.eq(0),
+            ]
+        except ConstraintError:
+            assert False
+            pass
 
         #self.platform.add_period_constraint(self.usb_48.clk, 1e9/48e9)
 
@@ -46,7 +73,8 @@ class _CRG(Module):
         reset_delay = Signal(12, reset=4095)
         self.comb += [
             self.cd_por.clk.eq(self.cd_sys.clk),
-            self.cd_sys.rst.eq(reset_delay != 0)
+            self.cd_sys.rst.eq(reset_delay != 0),
+            platform.request("user_led").eq(self.reset_pin),
         ]
         self.sync.por += \
             If(reset_delay != 0,
@@ -100,14 +128,27 @@ class BaseSoC(SoCCore):
     mem_map.update(SoCCore.mem_map)
 
     def __init__(self, platform, **kwargs):
+
+        # The TinyFPGA BX has 128kbit of blockram == 16kbytes
+        # Each BRAM is 512bytes == 32 BRAM blocks
+        # Need 4 BRAM blocks for USB, leaving 28.
+        #  - 8kbytes ROM - 16 x BRAMs
+        #  - 4kbytes RAM -  8 x BRAMs
+
         if 'integrated_rom_size' not in kwargs:
             kwargs['integrated_rom_size']=0
         if 'integrated_sram_size' not in kwargs:
-            kwargs['integrated_sram_size']=0x2800
+            kwargs['integrated_sram_size']=4*1024
+
+        # Disable BIOS
+        #kwargs['integrated_rom_init'] = [0]
 
         # FIXME: Force either lite or minimal variants of CPUs; full is too big.
+        if 'cpu_variant' not in kwargs:
+            kwargs['cpu_variant']='minimal'
 
         platform.add_extension(serial)
+        platform.add_extension(reset_button)
         clk_freq = int(16e6)
 
         # Extra 0x28000 is due to bootloader bitstream.

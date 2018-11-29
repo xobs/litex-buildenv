@@ -7,6 +7,7 @@ endif
 # Settings
 DEFAULT_TARGET = base
 TARGET ?= $(DEFAULT_TARGET)
+COMM_PORT ?= /dev/ttyUSB0
 BAUD ?= 115200
 
 # Image
@@ -37,8 +38,7 @@ endif
 
 # Firmware
 firmware-load-$(PLATFORM):
-	@echo "Unsupported."
-	@false
+	flterm --port=$(COMM_PORT) --kernel=$(FIRMWARE_FILEBASE).bin --speed=$(BAUD)
 
 firmware-flash-$(PLATFORM):
 	@echo "TinyFPGA BX doesn't support just flashing firmware, use image target instead."

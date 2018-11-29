@@ -52,7 +52,7 @@ class USBTestSoC(BaseSoC):
         self.submodules.io = LiteScopeIO(8)
         self.comb += [
             led.eq(self.io.output[0]),
-            platform.request("user_led", 0).eq(led),
+            #platform.request("user_led", 0).eq(led),
         ]
         # Give litescope control over the pullup.
         self.comb += usb_pads.pullup.eq(self.io.output[1])
@@ -66,7 +66,7 @@ class USBTestSoC(BaseSoC):
             #self.usb.iobuf.usb_p_rx,
             #self.usb.iobuf.usb_n_rx,
         ]
-        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 1024, clock_domain="usb_48")
+        self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals, 1024)
 
     def do_exit(self, vns, filename="test/analyzer.csv"):
         self.analyzer.export_csv(vns, filename)

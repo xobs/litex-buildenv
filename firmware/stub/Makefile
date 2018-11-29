@@ -39,7 +39,7 @@ endif
 firmware.elf: $(STUB_DIRECTORY)/$(LINKER_LD) $(OBJECTS)
 
 %.elf: ../libbase/crt0-$(CPU)-xip.o ../libbase/libbase-nofloat.a ../libcompiler_rt/libcompiler_rt.a
-	$(CC) $(CFLAGS) \
+	$(CC) $(LDFLAGS) \
 		-T $(STUB_DIRECTORY)/$(LINKER_LD) \
 		-N -o $@ \
 		-L$(BUILDINC_DIRECTORY) \
