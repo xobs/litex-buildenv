@@ -145,7 +145,7 @@ class BaseSoC(SoCCore):
 
         # FIXME: Force either lite or minimal variants of CPUs; full is too big.
         if 'cpu_variant' not in kwargs:
-            kwargs['cpu_variant']='minimal'
+            kwargs['cpu_variant']='lite'
 
         platform.add_extension(serial)
         platform.add_extension(reset_button)
