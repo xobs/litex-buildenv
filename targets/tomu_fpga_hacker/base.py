@@ -55,12 +55,16 @@ class _CRG(Module):
             )
         self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
 
+        self.clock_domains.cd_usb_48 = ClockDomain()
+        self.comb += [
+            self.cd_usb_48.clk.eq(platform.request("clk48")),
+        ]
 
 
 class BaseSoC(SoCCore):
     csr_peripherals = (
         "spiflash",
-        "cas",
+        #"cas",
     )
     csr_map_update(SoCCore.csr_map, csr_peripherals)
 
@@ -87,7 +91,7 @@ class BaseSoC(SoCCore):
         self.platform.add_period_constraint(self.crg.cd_sys.clk, 1e9/clk_freq)
 
         # Control and Status
-        self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
+        #self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
 
         # SPI flash peripheral
         self.submodules.spiflash = spi_flash.SpiFlashSingle(
