@@ -19,51 +19,23 @@ from platforms import fomu_evt
 
 from litex.soc.interconnect import wishbone
 
-class MemoryMustHaveContents(Memory):
-    @staticmethod
-    def emit_verilog(memory, ns, add_data_file):
-        # assert memory.init, "ROM contents not found! {}".format(memory.filename)
-        return Memory.emit_verilog(memory, ns, add_data_file)
-
-
 class RandomFirmwareROM(wishbone.SRAM):
     def __init__(self, size):
         import random
+        # Seed the random data with a fixed number, so different bitstreams
+        # can all share firmware.
         random.seed(2373)
         data = []
         for d in range(int(size / 4)):
             data.append(random.getrandbits(32))
-        # if os.path.exists(filename):
-        #     data = []
-        #     with open(filename, "rb") as firmware_file:
-        #         while True:
-        #             w = firmware_file.read(4)
-        #             if not w:
-        #                 break
-        #             data.append(struct.unpack(">I", w)[0])
         data_size = len(data)*4
         assert data_size > 0
         assert data_size <= size, (
             "Firmware is too big! {} bytes > {} bytes".format(
                 data_size, size))
-        print("Firmware {} bytes ({} bytes left)".format(
-            data_size, size-data_size))
+        print("Firmware {} bytes of random data".format(
+            data_size))
         wishbone.SRAM.__init__(self, size, read_only=True, init=data)
-
-        self.mem.__class__ = MemoryMustHaveContents
-    # self.mem.filename = filename
-
-# Alternate serial port, using the second 6-pin PMOD port. Follows Digilent
-# PMOD Specification Type 4, so e.g. PMOD USBUART can be used.
-# pmod_serial = [
-#     ("serial", 0,
-#         Subsignal("rx", Pins("PMOD:6")),
-#         Subsignal("tx", Pins("PMOD:5")),
-#         Subsignal("rts", Pins("PMOD:4")),
-#         Subsignal("cts", Pins("PMOD:7")),
-#         IOStandard("LVCMOS33"),
-#     ),
-# ]
 
 class _CRG(Module):
     def __init__(self, platform):
