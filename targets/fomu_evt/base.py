@@ -110,9 +110,14 @@ class BaseSoC(SoCCore):
         # a PMOD; pinout is identical either way.
         #platform.add_extension(fomu_evt.break_off_pmod)
         clk_freq = int(16e6)
+        usb_clk_freq = int(48e6)
 
+        print("ident: " + kwargs['ident'])
+        kwargs['ident']=None
         # kwargs['cpu_reset_address']=self.mem_map["spiflash"]+platform.gateware_size
-        SoCCore.__init__(self, platform, clk_freq, **kwargs)
+        SoCCore.__init__(self, platform, clk_freq,
+                        with_ctrl=False,
+                        **kwargs)
 
         bios_size = 0x2c00
         self.submodules.firmware_ram = RandomFirmwareROM(bios_size)
