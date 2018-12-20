@@ -1,6 +1,7 @@
 [submodule "third_party/litex"]
 	path = third_party/litex
-	url = https://github.com/enjoy-digital/litex.git
+	url = https://github.com/xobs/litex.git
+	branch = fomu-shrink
 [submodule "third_party/litedram"]
 	path = third_party/litedram
 	url = https://github.com/enjoy-digital/litedram.git
@@ -33,4 +34,5 @@
 	url = https://github.com/m-labs/migen.git
 [submodule "third_party/valentyusb"]
 	path = third_party/valentyusb
-	url = https://github.com/mithro/valentyusb.git
+	url = https://github.com/xobs/valentyusb.git
+	branch = smaller-usb
