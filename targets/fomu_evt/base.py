@@ -17,6 +17,41 @@ from gateware import spi_flash
 from targets.utils import csr_map_update
 from platforms import fomu_evt
 
+from litex.soc.interconnect import wishbone
+
+class MemoryMustHaveContents(Memory):
+    @staticmethod
+    def emit_verilog(memory, ns, add_data_file):
+        # assert memory.init, "ROM contents not found! {}".format(memory.filename)
+        return Memory.emit_verilog(memory, ns, add_data_file)
+
+
+class RandomFirmwareROM(wishbone.SRAM):
+    def __init__(self, size):
+        import random
+        random.seed(2373)
+        data = []
+        for d in range(int(size / 4)):
+            data.append(random.getrandbits(32))
+        # if os.path.exists(filename):
+        #     data = []
+        #     with open(filename, "rb") as firmware_file:
+        #         while True:
+        #             w = firmware_file.read(4)
+        #             if not w:
+        #                 break
+        #             data.append(struct.unpack(">I", w)[0])
+        data_size = len(data)*4
+        assert data_size > 0
+        assert data_size <= size, (
+            "Firmware is too big! {} bytes > {} bytes".format(
+                data_size, size))
+        print("Firmware {} bytes ({} bytes left)".format(
+            data_size, size-data_size))
+        wishbone.SRAM.__init__(self, size, read_only=True, init=data)
+
+        self.mem.__class__ = MemoryMustHaveContents
+    # self.mem.filename = filename
 
 # Alternate serial port, using the second 6-pin PMOD port. Follows Digilent
 # PMOD Specification Type 4, so e.g. PMOD USBUART can be used.
@@ -90,10 +125,12 @@ class BaseSoC(SoCCore):
 
     def __init__(self, platform, **kwargs):
         if 'integrated_rom_size' not in kwargs:
-            kwargs['integrated_rom_size']=0x2c00
+            kwargs['integrated_rom_size']=0
         if 'integrated_sram_size' not in kwargs:
             kwargs['integrated_sram_size']=0
         kwargs['cpu_reset_address'] = 0
+
+        # self.flash_boot_address = self.mem_map["spiflash"]+platform.gateware_size+bios_size
 
         # FIXME: Force either lite or minimal variants of CPUs; full is too big.
 
@@ -104,6 +141,12 @@ class BaseSoC(SoCCore):
 
         # kwargs['cpu_reset_address']=self.mem_map["spiflash"]+platform.gateware_size
         SoCCore.__init__(self, platform, clk_freq, **kwargs)
+
+        bios_size = 0x2c00
+        self.submodules.firmware_ram = RandomFirmwareROM(bios_size)
+        self.add_constant("ROM_DISABLE", 1)
+        # self.add_memory_region("rom", kwargs['cpu_reset_address'], bios_size)
+        self.register_rom(self.firmware_ram.bus, bios_size)
 
         self.submodules.crg = _CRG(platform)
         self.platform.add_period_constraint(self.crg.cd_sys.clk, 1e9/clk_freq)
