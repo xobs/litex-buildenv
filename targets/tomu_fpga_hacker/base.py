@@ -56,6 +56,7 @@ class _CRG(Module):
         self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
 
         self.clock_domains.cd_usb_48 = ClockDomain()
+        platform.add_period_constraint(self.cd_usb_48.clk, 1e9/48e6)
         self.comb += [
             self.cd_usb_48.clk.eq(platform.request("clk48")),
         ]
