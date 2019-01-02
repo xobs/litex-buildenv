@@ -18,6 +18,8 @@ from targets.utils import csr_map_update
 import platforms.fomu_evt as fomu_evt
 from targets.fomu_evt.base import BaseSoC
 from third_party.valentyusb.valentyusb import usbcore
+from third_party.valentyusb.valentyusb.usbcore import io as usbio
+from third_party.valentyusb.valentyusb.usbcore.cpu import unififo as usbcpu
 
 from litex.soc.interconnect import wishbone
 
@@ -32,8 +34,6 @@ class RandomFirmwareROM(wishbone.SRAM):
             data.append(random.getrandbits(32))
         print("Firmware {} bytes of random data".format(size))
         wishbone.SRAM.__init__(self, size, read_only=True, init=data)
-
-
 
 
 class _CRG(Module):
@@ -107,15 +107,16 @@ class USBNoBios(SoCCore):
         kwargs['with_ctrl']=False
         BaseSoC.__init__(self, platform, skip_spi_boot=True, **kwargs)
 
-        bios_size = 0x2400
+        bios_size = 0x2000
         self.submodules.random_rom = RandomFirmwareROM(bios_size)
         self.add_constant("ROM_DISABLE", 1)
         self.register_rom(self.random_rom.bus, bios_size)
 
         # ValentyUSB
+
         usb_pads = platform.request("usb")
-        usb_iobuf = usbcore.UsbIoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
-        self.submodules.usb = usbcore.UsbSimpleFifo(usb_iobuf)
+        usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
+        self.submodules.usb = usbcpu.UsbUniFifo(usb_iobuf)
 
         # Disable final deep-sleep power down so firmware words are loaded
         # onto softcore's address bus.

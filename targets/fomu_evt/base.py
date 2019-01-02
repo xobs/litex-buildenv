@@ -35,11 +35,13 @@ class _CRG(Module):
         )
 
         self.clock_domains.cd_sys = ClockDomain()
+        self.clock_domains.cd_usb_12 = ClockDomain()
         self.reset = Signal()
 
         # FIXME: Use PLL, increase system clock to 32 MHz, pending nextpnr
         # fixes.
         self.comb += self.cd_sys.clk.eq(clk12)
+        self.comb += self.cd_usb_12.clk.eq(clk12)
 
         # POR reset logic- POR generated from sys clk, POR logic feeds sys clk
         # reset.
@@ -47,7 +49,8 @@ class _CRG(Module):
         reset_delay = Signal(12, reset=4095)
         self.comb += [
             self.cd_por.clk.eq(self.cd_sys.clk),
-            self.cd_sys.rst.eq(reset_delay != 0)
+            self.cd_sys.rst.eq(reset_delay != 0),
+            self.cd_usb_12.rst.eq(reset_delay != 0)
         ]
         self.sync.por += \
             If(reset_delay != 0,
@@ -94,6 +97,7 @@ class BaseSoC(SoCCore):
 
         self.submodules.crg = _CRG(platform)
         self.platform.add_period_constraint(self.crg.cd_sys.clk, 1e9/clk_freq)
+        self.platform.add_period_constraint(self.crg.cd_usb_12.clk, 1e9/clk_freq)
 
         # Control and Status
         #self.submodules.cas = cas.ControlAndStatus(platform, clk_freq)
