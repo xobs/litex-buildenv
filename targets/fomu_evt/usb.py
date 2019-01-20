@@ -19,7 +19,8 @@ import platforms.fomu_evt as fomu_evt
 from targets.fomu_evt.base import BaseSoC
 from third_party.valentyusb.valentyusb import usbcore
 from third_party.valentyusb.valentyusb.usbcore import io as usbio
-from third_party.valentyusb.valentyusb.usbcore.cpu import unififo as usbcpu
+from third_party.valentyusb.valentyusb.usbcore.cpu import epfifo
+from third_party.valentyusb.valentyusb.usbcore.endpoint import EndpointType
 
 from litex.soc.interconnect import wishbone
 
@@ -116,7 +117,8 @@ class USBNoBios(SoCCore):
 
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
-        self.submodules.usb = usbcpu.UsbUniFifo(usb_iobuf)
+        self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf)
+        #,endpoints=[EndpointType.BIDIR])
 
         # Disable final deep-sleep power down so firmware words are loaded
         # onto softcore's address bus.
