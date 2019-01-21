@@ -117,8 +117,7 @@ class USBNoBios(SoCCore):
 
         usb_pads = platform.request("usb")
         usb_iobuf = usbio.IoBuf(usb_pads.d_p, usb_pads.d_n, usb_pads.pullup)
-        self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf)
-        #,endpoints=[EndpointType.BIDIR])
+        self.submodules.usb = epfifo.PerEndpointFifoInterface(usb_iobuf, endpoints=[EndpointType.BIDIR])
 
         # Disable final deep-sleep power down so firmware words are loaded
         # onto softcore's address bus.
