@@ -37,49 +37,6 @@ class RandomFirmwareROM(wishbone.SRAM):
         wishbone.SRAM.__init__(self, size, read_only=True, init=data)
 
 
-class _CRG(Module):
-    def __init__(self, platform):
-        clk12 = Signal()
-        # "0b00" Sets 48MHz HFOSC output
-        # "0b01" Sets 24MHz HFOSC output.
-        # "0b10" Sets 12MHz HFOSC output.
-        # "0b11" Sets 6MHz HFOSC output
-        self.specials += Instance(
-            "SB_HFOSC",
-            i_CLKHFEN=1,
-            i_CLKHFPU=1,
-            o_CLKHF=clk12,
-            p_CLKHF_DIV="0b10", # 12MHz
-        )
-
-        self.clock_domains.cd_sys = ClockDomain()
-        self.reset = Signal()
-
-        # FIXME: Use PLL, increase system clock to 32 MHz, pending nextpnr
-        # fixes.
-        self.comb += self.cd_sys.clk.eq(clk12)
-
-        # POR reset logic- POR generated from sys clk, POR logic feeds sys clk
-        # reset.
-        self.clock_domains.cd_por = ClockDomain()
-        reset_delay = Signal(12, reset=4095)
-        self.comb += [
-            self.cd_por.clk.eq(self.cd_sys.clk),
-            self.cd_sys.rst.eq(reset_delay != 0)
-        ]
-        self.sync.por += \
-            If(reset_delay != 0,
-                reset_delay.eq(reset_delay - 1)
-            )
-        self.specials += AsyncResetSynchronizer(self.cd_por, self.reset)
-
-        self.clock_domains.cd_usb_48 = ClockDomain()
-        platform.add_period_constraint(self.cd_usb_48.clk, 1e9/48e6)
-        self.comb += [
-            self.cd_usb_48.clk.eq(platform.request("clk48")),
-        ]
-
-
 class USBNoBios(SoCCore):
     csr_peripherals = (
         "spiflash",
