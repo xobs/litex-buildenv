@@ -4,7 +4,7 @@ import os
 import sys
 import threading
 
-from litex.soc.tools.remote import RemoteServer
+from litex.utils.litex_server import RemoteServer
 from litex.soc.tools.remote import RemoteClient
 from litex.soc.tools.remote import CommUART
 
