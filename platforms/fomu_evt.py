@@ -5,8 +5,8 @@ from litex.build.lattice.programmer import IceStormProgrammer
 
 _io = [
     ("user_led_n",    0, Pins("41"), IOStandard("LVCMOS33")),
-    # ("user_led_n",    1, Pins("45"), IOStandard("LVCMOS33")),
     # Color-specific aliases
+    ("user_ledb_n",   0, Pins("41"), IOStandard("LVCMOS33")),
     ("user_ledr_n",   0, Pins("40"), IOStandard("LVCMOS33")),
     ("user_ledg_n",   0, Pins("39"), IOStandard("LVCMOS33")),
     ("user_btn_n",    0, Pins("42"), IOStandard("LVCMOS33")),
